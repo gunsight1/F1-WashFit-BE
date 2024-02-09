@@ -1,8 +1,8 @@
 package com.kernel360.commoncode.service;
 
 import com.kernel360.commoncode.command.CommonCodeCommand;
-import com.kernel360.entity.commoncode.CommonCode;
-import com.kernel360.infra.reader.CommonCodeReader;
+import com.kernel360.commoncode.entity.CommonCode;
+import com.kernel360.commoncode.reader.CommonCodeReader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

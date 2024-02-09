@@ -23,7 +23,7 @@ public class MemberController {
     @PostMapping("/join")
     public ResponseEntity<?> joinMember(@RequestBody MemberDto joinRequestDto) {
 
-        memberService.joinMember(joinRequestDto);
+        memberService.joinMember(joinRequestDto.toCommand());
 
         return ApiResponse.toResponseEntity(SUCCESS_REQUEST_JOIN_MEMBER_CREATED);
     }
@@ -31,7 +31,7 @@ public class MemberController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody MemberDto loginDto) {
 
-        MemberDto memberInfo = memberService.login(loginDto);
+        MemberDto memberInfo = MemberDto.from(memberService.login(loginDto.toCommand()));
 
         //부가정보가 입력 되어있는가 > 차량정보, 세차정보, boolean (감싸서 보내든 말든 노상관)
 

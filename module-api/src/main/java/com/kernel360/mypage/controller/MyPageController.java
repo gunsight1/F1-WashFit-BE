@@ -20,20 +20,20 @@ import java.util.Map;
 public class MyPageController {
     private final MemberService memberService;
     private final ProductService productService;
-
-    @GetMapping("/member")
-    <T> ResponseEntity<ApiResponse<MemberDto>> myInfo(RequestEntity<T> request) {
-        MemberDto dto = memberService.findMemberByToken(request);
-
-        return ApiResponse.toResponseEntity(MemberBusinessCode.SUCCESS_FIND_REQUEST_MEMBER, dto);
-    }
-
-    @GetMapping("/car")
-    <T> ResponseEntity<ApiResponse<Map<String, Object>>> myCar(RequestEntity<T> request) {
-        Map<String, Object> carInfo = memberService.getCarInfo(request);
-
-        return ApiResponse.toResponseEntity(MemberBusinessCode.SUCCESS_FIND_CAR_INFO_IN_MEMBER, carInfo);
-    }
+//
+//    @GetMapping("/member") //TODO ID만 받는것으로 리팩토링
+//    <T> ResponseEntity<ApiResponse<MemberDto>> myInfo(RequestEntity<T> request) {
+//        MemberDto dto = memberService.findMemberByToken(request);
+//
+//        return ApiResponse.toResponseEntity(MemberBusinessCode.SUCCESS_FIND_REQUEST_MEMBER, dto);
+//    }
+//
+//    @GetMapping("/car") //TODO ID만 받는것으로 리팩토링
+//    <T> ResponseEntity<ApiResponse<Map<String, Object>>> myCar(RequestEntity<T> request) {
+//        Map<String, Object> carInfo = memberService.getCarInfo(request);
+//
+//        return ApiResponse.toResponseEntity(MemberBusinessCode.SUCCESS_FIND_CAR_INFO_IN_MEMBER, carInfo);
+//    }
 
 
     @DeleteMapping("/member")
@@ -44,21 +44,21 @@ public class MyPageController {
         return ApiResponse.toResponseEntity(MemberBusinessCode.SUCCESS_REQUEST_DELETE_MEMBER);
     }
 
-
-    @PostMapping("/member")
-    <T> ResponseEntity<ApiResponse<T>> changePassword(@RequestBody MemberInfo memberInfo) {
-        memberService.changePassword(memberInfo);
-        log.info("{} 회원 비밀번호 수정 처리 완료", memberInfo.id() );
-
-        return ApiResponse.toResponseEntity(MemberBusinessCode.SUCCESS_REQUEST_CHANGE_PASSWORD_MEMBER);
-    }
-
-
-    @PutMapping("/member")
-    <T> ResponseEntity<ApiResponse<T>> updateMember(@RequestBody MemberDto memberDto) {
-        memberService.updateMember(memberDto);
-
-        return ApiResponse.toResponseEntity(MemberBusinessCode.SUCCESS_REQUEST_UPDATE_MEMBER);
-
-    }
+//
+//    @PostMapping("/member")
+//    <T> ResponseEntity<ApiResponse<T>> changePassword(@RequestBody MemberInfo memberInfo) {
+//        memberService.changePassword(memberInfo);
+//        log.info("{} 회원 비밀번호 수정 처리 완료", memberInfo.id() );
+//
+//        return ApiResponse.toResponseEntity(MemberBusinessCode.SUCCESS_REQUEST_CHANGE_PASSWORD_MEMBER);
+//    }
+//
+//
+//    @PutMapping("/member")
+//    <T> ResponseEntity<ApiResponse<T>> updateMember(@RequestBody MemberDto memberDto) {
+//        memberService.updateMember(memberDto);
+//
+//        return ApiResponse.toResponseEntity(MemberBusinessCode.SUCCESS_REQUEST_UPDATE_MEMBER);
+//
+//    }
 }

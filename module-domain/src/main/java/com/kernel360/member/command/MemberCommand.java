@@ -1,13 +1,16 @@
-package com.kernel360.member.dto;
+package com.kernel360.member.command;
 
-import com.kernel360.member.command.MemberCommand;
+import com.kernel360.member.entity.Member;
+import com.kernel360.member.enumSet.Age;
+import com.kernel360.member.enumSet.Gender;
+import com.kernel360.member.service.MemberServiceImpl;
 
 import java.time.LocalDate;
 
 /**
- * DTO for {@link com.kernel360.member.command.MemberCommand}
+ * Command for {@link com.kernel360.member.entity.Member}
  */
-public record MemberDto(Long memberNo,
+public record MemberCommand(Long memberNo,
                         String id,
                         String email,
                         String password,
@@ -20,7 +23,7 @@ public record MemberDto(Long memberNo,
                         String jwtToken
 ) {
 
-    public static MemberDto of(
+    public static MemberCommand of(
             Long memberNo,
             String id,
             String email,
@@ -33,7 +36,7 @@ public record MemberDto(Long memberNo,
             String modifiedBy,
             String jwtToken
     ) {
-        return new MemberDto(
+        return new MemberCommand(
                 memberNo,
                 id,
                 email,
@@ -48,42 +51,42 @@ public record MemberDto(Long memberNo,
         );
     }
 
-    public static MemberDto from(MemberCommand command) {
-        return MemberDto.of(
-                command.getMemberNo(),
-                command.getId(),
-                command.getEmail(),
-                command.getPassword(),
-                command.getGender(),
-                command.getAge(),
-                command.getCreatedAt(),
-                command.getCreatedBy(),
-                command.getModifiedAt(),
-                command.getModifiedBy(),
+    public static MemberCommand from(Member entity) {
+        return MemberCommand.of(
+                entity.getMemberNo(),
+                entity.getId(),
+                entity.getEmail(),
+                entity.getPassword(),
+                Gender.ordinalToName(entity.getGender()),
+                Age.ordinalToValue(entity.getAge()),
+                entity.getCreatedAt(),
+                entity.getCreatedBy(),
+                entity.getModifiedAt(),
+                entity.getModifiedBy(),
                 null
         );
     }
 
-    public MemberCommand toCommand() {
-        return MemberCommand.of(
+    public Member toDto() {
+        return Member.of(
                 this.memberNo(),
                 this.id(),
                 this.email(),
                 this.password(),
-                this.gender(),
-                this.age()
+                Gender.valueOf(this.gender()).ordinal(),
+                Age.valueOf(this.age()).ordinal()
         );
     }
 
     /** joinMember **/
-    public static MemberDto of(
+    public static MemberCommand of(
             String id,
             String email,
             String password,
             String gender,
             String   age
     ){
-        return new MemberDto(
+        return new MemberCommand(
                 null,
                 id,
                 email,
@@ -99,28 +102,28 @@ public record MemberDto(Long memberNo,
     }
 
     /** Login Binding **/
-    public static MemberDto login(MemberCommand command, String jwtToken) {
-        return MemberDto.of(
-                command.getMemberNo(),
-                command.getId(),
-                command.getEmail(),
+    public static MemberCommand login(Member entity, String jwtToken) {
+        return MemberCommand.of(
+                entity.getMemberNo(),
+                entity.getId(),
+                entity.getEmail(),
                 null,
-                command.getGender(),
-                command.getAge(),
-                command.getCreatedAt(),
-                command.getCreatedBy(),
-                command.getModifiedAt(),
-                command.getModifiedBy(),
+                Gender.ordinalToName(entity.getGender()),
+                Age.ordinalToValue(entity.getAge()),
+                entity.getCreatedAt(),
+                entity.getCreatedBy(),
+                entity.getModifiedAt(),
+                entity.getModifiedBy(),
                 jwtToken
         );
     }
 
     /** Request Login **/
-    public static MemberDto of(
+    public static MemberCommand of(
             String id,
             String password
     ){
-        return new MemberDto(
+        return new MemberCommand(
                 null,
                 id,
                 null,
@@ -134,4 +137,5 @@ public record MemberDto(Long memberNo,
                 null
         );
     }
+
 }

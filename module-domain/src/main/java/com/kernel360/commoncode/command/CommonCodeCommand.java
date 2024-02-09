@@ -1,6 +1,6 @@
 package com.kernel360.commoncode.command;
 
-import com.kernel360.entity.commoncode.CommonCode;
+import com.kernel360.commoncode.entity.CommonCode;
 
 import java.time.LocalDate;
 

@@ -1,6 +1,6 @@
 package com.kernel360.global.Interceptor;
 
-import com.kernel360.auth.entity.Auth;
+import com.kernel360.Auth.AuthService;
 import com.kernel360.exception.BusinessException;
 import com.kernel360.global.code.AcceptInterceptorErrorCode;
 import com.kernel360.member.service.MemberService;
@@ -17,7 +17,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class AcceptInterceptor implements HandlerInterceptor {
 
     private final JWT jwt;
-    private final MemberService memberService;
+    private final AuthService authService;
     private static final int CLOSING_PERIOD = 2;
 
     @Override
@@ -33,16 +33,16 @@ public class AcceptInterceptor implements HandlerInterceptor {
 
         if ( (validRequestPeriod <= CLOSING_PERIOD) ) {
             String encryptToken = ConvertSHA256.convertToSHA256(requestToken);
-            Auth storedAuthInfo = getOneAuthByJwt(encryptToken);
+            AuthInfo storedAuthInfo = getOneAuthByJwt(encryptToken);
             String newToken = reGeneratedToken(requestToken, storedAuthInfo);
             response.setHeader("Authorization", newToken);
         }
 
         return result;
     }
-    private Auth getOneAuthByJwt(String encryptToken) {
+    private AuthInfo getOneAuthByJwt(String encryptToken) {
 
-        Auth result = memberService.findOneAuthByJwt(encryptToken);
+        AuthInfo result = authService.findOneAuthByJwt(encryptToken);
 
         if(result == null) { throw new BusinessException(AcceptInterceptorErrorCode.FAILED_VALID_REQUEST_TOKEN_HASH); }
         if(!encryptToken.equals(result.getJwtToken())) { throw new BusinessException(AcceptInterceptorErrorCode.FAILED_VALID_REQUEST_TOKEN_HASH); }
@@ -63,12 +63,12 @@ public class AcceptInterceptor implements HandlerInterceptor {
     /**
      * 신규토큰 발급 후 저장
      **/
-    private String reGeneratedToken(String requestToken, Auth storedAuthInfo) {
+    private String reGeneratedToken(String requestToken, AuthInfo storedAuthInfo) {
         String newToken = jwt.generateToken(jwt.ownerId(requestToken));
         String newEncryptToken = ConvertSHA256.convertToSHA256(newToken);
 
-        storedAuthInfo = memberService.modifyAuthJwt(storedAuthInfo, newEncryptToken);
-        memberService.reissuanceJwt(storedAuthInfo);
+        storedAuthInfo = authService.modifyAuthJwt(storedAuthInfo, newEncryptToken);
+        authService.reissuanceJwt(storedAuthInfo);
 
         return newToken;
     }
