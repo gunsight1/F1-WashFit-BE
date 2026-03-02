@@ -1,6 +1,7 @@
 package com.kernel360.global.config;
 
 import com.kernel360.main.conveter.StringToSortConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -9,6 +10,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    @Value("${app.cors.allowed-origins}")
+    private String[] servers;
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
@@ -26,7 +30,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowedMethods("*")
                 .allowCredentials(true)
-                .allowedOrigins("https://www.washfit.site", "https://dev.washfit.site", "https://devapi.washfit.site", "https://api.washfit.site", "http://localhost:3000")
+                .allowedOrigins(servers)
                 .maxAge(3600);
     }
 
