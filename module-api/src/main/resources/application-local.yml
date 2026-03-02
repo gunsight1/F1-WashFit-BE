@@ -2,9 +2,9 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     # local docker db
-    url: ENC(DPvTlKCZniOLZz5QHwB2I1p6FbeyEhWeo6DXSHL7kq8idfthgqkC/VJX78osBC5D/hzFwdXGDkxWUZ2euYPrAA==)
-    username: ENC(izKjVNL/2x4aTDQeLxQg4VU0v5kAKduTrnVq7LUa80U=)
-    password: ENC(VcPYkEOg9OzuwNw1UeYOgLqKsRkFoRUHwjRcxZzGgZQ=)
+    url: ENC(C8mQIxqkszJ7rWFSeKKfGP3W8iwWo8KhwezyapCKM8KFX6Qqu6nOGMCZz9Tj6MZAJIRTAbDcmyk53r/STiluTudDB26GWRCh)
+    username: ENC(rFf0u7UY0IzEwjlSK69n6vxN8XFimQSz/PHtPlTJvJw=)
+    password: ENC(YhRb7Zms40OH2hFdgqN1Pj0bkNR5Ur/9mwc9XO8cyG8=)
   jpa:
     show-sql: true
     properties:
@@ -24,8 +24,8 @@ spring:
 
   mail:
     host: smtp.gmail.com
-    username: ENC(TEY+McqfBOprewh0EpDJIclJKk8o+bY/0CWpPynWeylc/HNeWGSI6Q==)
-    password: ENC(gAVZp58ZhI0MCJcvKFhB0lVNYPtMg35QIslSCJhu2pJB4ck+w1vscA==)
+    username: ENC(dloOCGPjxlxKngYlHBslBYlFSsijoaqGoWaLO4SH0m3V0GEstBMpNA==)
+    password: ENC(GwgkC7z/p3rZf+t9C2x+6lSUu8DBLFISPrTAzBpy45OjmvLBtBN6Pw==)
     port: 587
     properties:
       mail:
@@ -44,8 +44,8 @@ spring:
         pool:
           max-active: 20
           max-idle: 20
-      host: 127.0.0.1
-      password: wash1234
+      host: localhost
+      password: ENC(MXs+zde03lvI/DwZa/0vENxrJOBHzmWJPs2BYb5n/4Z2iEpqEovfzQ==)
 
 jasypt:
   encryptor:
@@ -80,9 +80,9 @@ constants:
 
 aws:
   credentials:
-    access-key-id: ENC(vx2H0E5tIohXqzynDez9M7Kn3Vjj0t3sS3Wq6uyN5kgYeXhDyIylOA==)
-    secret-access-key: ENC(m/2qCJve4UP86W7Q0ZQhKSDGBnltnbGOnso7d/9wiNovq1Mzyto608rUnCQ+AhqUThpClK1cmxSOj6WHfAbZTQ==)
+    access-key-id: ENC(dloOCGPjxlxKngYlHBslBYlFSsijoaqGoWaLO4SH0m3V0GEstBMpNA==)
+    secret-access-key: ENC(dloOCGPjxlxKngYlHBslBYlFSsijoaqGoWaLO4SH0m3V0GEstBMpNA==)
   s3:
     bucket:
-      name: ENC(JQIi11b8LB+99FnX02wCGwdXTOEax3VkuzgNqAVshK4=)
-      url: ENC(vhIgYYu6Nz9zFBDC3Rd3IoRGZBoT2zFnYDODVl/3f9MN/rDj9/9ArlT3B1shs2Y+A67BebgtMkp9v8jP3EN5owVEbXPu0vYY)
+      name: ENC(dloOCGPjxlxKngYlHBslBYlFSsijoaqGoWaLO4SH0m3V0GEstBMpNA==)
+      url: ENC(dloOCGPjxlxKngYlHBslBYlFSsijoaqGoWaLO4SH0m3V0GEstBMpNA==)
