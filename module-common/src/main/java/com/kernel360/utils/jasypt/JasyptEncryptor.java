@@ -3,11 +3,9 @@ package com.kernel360.utils.jasypt;
 import org.jasypt.encryption.StringEncryptor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.annotation.Profile;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
