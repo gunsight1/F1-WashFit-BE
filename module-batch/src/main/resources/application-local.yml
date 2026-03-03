@@ -16,9 +16,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ENC(ulGy/5rB4Y7rD0wHbwR21rLG/jT1Lkm02LgSbHuE9n9mmxZmv0FenoE8dD89qMadlLdy+gAf24ulHM3z9/JYrQ==)
-    username: ENC(gv8+vDAseDkw87FNUNmFQVdk5dTBu0GQ71VBBuUyeIY=)
-    password: ENC(VcPYkEOg9OzuwNw1UeYOgLqKsRkFoRUHwjRcxZzGgZQ=)
+    url: ENC(C8mQIxqkszJ7rWFSeKKfGP3W8iwWo8KhwezyapCKM8KFX6Qqu6nOGMCZz9Tj6MZAJIRTAbDcmyk53r/STiluTudDB26GWRCh)
+    username: ENC(rFf0u7UY0IzEwjlSK69n6vxN8XFimQSz/PHtPlTJvJw=)
+    password: ENC(YhRb7Zms40OH2hFdgqN1Pj0bkNR5Ur/9mwc9XO8cyG8=)
     hikari:
       maximum-pool-size: 100
       idle-timeout: 20000

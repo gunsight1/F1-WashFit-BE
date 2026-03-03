@@ -5,6 +5,7 @@ import com.kernel360.carinfo.entity.CarInfo;
 import com.kernel360.carinfo.repository.CarInfoRepository;
 import com.kernel360.commoncode.service.CommonCodeService;
 import com.kernel360.exception.BusinessException;
+import com.kernel360.global.jwt.JwtTokenProvider;
 import com.kernel360.member.code.MemberErrorCode;
 import com.kernel360.member.dto.*;
 import com.kernel360.member.entity.Member;
@@ -15,14 +16,16 @@ import com.kernel360.member.enumset.Gender;
 import com.kernel360.member.repository.MemberRepository;
 import com.kernel360.member.repository.WithdrawMemberRepository;
 import com.kernel360.utils.ConvertSHA256;
-import com.kernel360.utils.JWT;
 import com.kernel360.washinfo.entity.WashInfo;
 import com.kernel360.washinfo.repository.WashInfoRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -33,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 @RequiredArgsConstructor
 public class MemberService {
 
-    private final JWT jwt;
+    private final JwtTokenProvider jwtTokenProvider;
     private final AuthService authService;
     private final MemberRepository memberRepository;
     private final CommonCodeService commonCodeService;
@@ -76,12 +79,15 @@ public class MemberService {
         Member memberEntity = memberRepository.findOneByIdAndPassword(loginEntity.getId(), loginEntity.getPassword());
         if (Objects.isNull(memberEntity)) { throw new BusinessException(MemberErrorCode.FAILED_REQUEST_LOGIN);  }
 
-        String loginToken = jwt.generateToken(memberEntity.getId());
+        // JWT 생성
+        Authentication authentication = new UsernamePasswordAuthenticationToken(memberEntity.getId(), "", new ArrayList<>());
+        String accessToken = jwtTokenProvider.createAccessToken(authentication);
+        String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
 
-        //TODO REFACTOR AUTH 정보를 RDB -> 래디스로 변경
-        authService.saveAuthByMember(memberEntity.getMemberNo(), ConvertSHA256.convertToSHA256(loginToken), request);
+        // Refresh Token 저장
+        authService.saveRefreshToken(memberEntity, refreshToken, request);
 
-        return MemberDto.login(memberEntity, loginToken);
+        return MemberDto.login(memberEntity, accessToken, refreshToken);
     }
 
     private Member newRequestLoginEntity(MemberDto loginDto) {
@@ -105,7 +111,7 @@ public class MemberService {
     }
 
     public MemberDto findMemberByToken(String token) {
-        String id = JWT.ownerId(token);
+        String id = jwtTokenProvider.getSubject(token);
 
         return MemberDto.from(memberRepository.findOneById(id));
     }
@@ -125,7 +131,7 @@ public class MemberService {
 
     @Transactional
     public void deleteMemberByToken(String accessToken) {
-        Member member = memberRepository.findOneById(JWT.ownerId(accessToken));
+        Member member = memberRepository.findOneById(jwtTokenProvider.getSubject(accessToken));
         withdrawMemberRepository.save(WithdrawMember.of(member)); //of 받는식을 변경했습니다. 이 방식으로 리팩터를 하면 코드가 깔끔하네요.
         memberRepository.delete(member);
         log.info("{} 회원 탈퇴 처리 완료", accessToken);
@@ -133,7 +139,7 @@ public class MemberService {
 
     @Transactional
     public void changePassword(String password, String token) {
-        String id = JWT.ownerId(token);
+        String id = jwtTokenProvider.getSubject(token);
         Member member = memberRepository.findOneByIdForAccountTypeByPlatform(id);
 
         if (member.getPassword().equals(ConvertSHA256.convertToSHA256(password))) {
@@ -146,7 +152,7 @@ public class MemberService {
 
     @Transactional
     public void updateMember(MemberDto updateMember, String token) {
-        String id = JWT.ownerId(token);
+        String id = jwtTokenProvider.getSubject(token);
         Member existingMember = memberRepository.findOneById(id);
         existingMember.updateFromInfo( Gender.valueOf(updateMember.gender()).ordinal(), Age.valueOf(updateMember.age()).ordinal());
 
@@ -155,7 +161,7 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public Map<String, Object> getCarInfo(String token) {
-        String id = JWT.ownerId(token);
+        String id = jwtTokenProvider.getSubject(token);
         Member member = memberRepository.findOneById(id);
         if(member.getCarInfo() == null){
             throw new BusinessException(MemberErrorCode.FAILED_FIND_MEMBER_CAR_INFO);
@@ -174,7 +180,7 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public Map<String, Object> getWashInfo(String token) {
-        String id = JWT.ownerId(token);
+        String id = jwtTokenProvider.getSubject(token);
         Member member = memberRepository.findOneById(id);
         if (member == null) {
             throw new BusinessException(MemberErrorCode.FAILED_FIND_MEMBER_INFO);
@@ -195,7 +201,7 @@ public class MemberService {
 
     @Transactional
     public void saveWashInfo(WashInfoDto washInfoDto, String token) {
-        String id = JWT.ownerId(token);
+        String id = jwtTokenProvider.getSubject(token);
         Member member = memberRepository.findOneById(id);
         WashInfo washInfo = washInfoRepository.findWashInfoByMember(member);
 
@@ -211,7 +217,7 @@ public class MemberService {
 
     @Transactional
     public void saveCarInfo(CarInfoDto carInfoDto, String token) {
-        String id = JWT.ownerId(token);
+        String id = jwtTokenProvider.getSubject(token);
         Member member = memberRepository.findOneById(id);
         CarInfo carInfo = carInfoRepository.findCarInfoByMember(member);
 
@@ -269,17 +275,20 @@ public class MemberService {
 
         MemberDto memberDto = MemberDto.from(memberRepository.findOneById(kakaoUser.id()));
 
-        String loginToken = jwt.generateToken(memberDto.id());
+        // JWT 생성
+        Authentication authentication = new UsernamePasswordAuthenticationToken(memberDto.id(), "", new ArrayList<>());
+        String newAccessToken = jwtTokenProvider.createAccessToken(authentication);
+        String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
 
-        //TODO REFACTOR AUTH 정보를 RDB -> 래디스로 변경
-        authService.saveAuthByMember(memberDto.memberNo(), ConvertSHA256.convertToSHA256(loginToken), request);
+        // Refresh Token 저장
+        authService.saveRefreshToken(memberDto.toEntity(), refreshToken, request);
 
-        return MemberDto.fromKakao(memberDto, loginToken);
+        return MemberDto.fromKakao(memberDto, newAccessToken, refreshToken);
     }
 
     @Transactional(readOnly = true)
     public boolean validatePassword(String password, String token) {
-        String id = JWT.ownerId(token);
+        String id = jwtTokenProvider.getSubject(token);
         Member member = memberRepository.findOneById(id);
 
         return member.getPassword().equals(ConvertSHA256.convertToSHA256(password));

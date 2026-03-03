@@ -75,7 +75,9 @@ constants:
   password-reset-token:
     duration-minute: 5
   jwt:
-    expiring-minute: 60
+    secret: V2FzaEZpdC1Qcm9qZWN0LURlc2lnbmVkLUJ5LUtlcm5lbDM2MC1UZWFtLVdhc2hGaXQtQmVzdA== # Base64 Encoded
+    access-token-expiration-minutes: 30
+    refresh-token-expiration-days: 7
 
 
 aws:

@@ -4,7 +4,6 @@ import com.kernel360.member.entity.Member;
 import com.kernel360.member.enumset.Age;
 import com.kernel360.member.enumset.Gender;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -20,7 +19,8 @@ public record MemberDto(Long memberNo,
                         String createdBy,
                         LocalDateTime modifiedAt,
                         String modifiedBy,
-                        String jwtToken
+                        String jwtToken,
+                        String refreshToken
 ) {
 
     public static MemberDto of(
@@ -34,7 +34,8 @@ public record MemberDto(Long memberNo,
             String createdBy,
             LocalDateTime modifiedAt,
             String modifiedBy,
-            String jwtToken
+            String jwtToken,
+            String refreshToken
     ) {
         return new MemberDto(
                 memberNo,
@@ -47,7 +48,8 @@ public record MemberDto(Long memberNo,
                 createdBy,
                 modifiedAt,
                 modifiedBy,
-                jwtToken
+                jwtToken,
+                refreshToken
         );
     }
 
@@ -63,11 +65,12 @@ public record MemberDto(Long memberNo,
                 entity.getCreatedBy(),
                 entity.getModifiedAt(),
                 entity.getModifiedBy(),
+                null,
                 null
         );
     }
 
-    public static MemberDto fromKakao(MemberDto dto, String token) {
+    public static MemberDto fromKakao(MemberDto dto, String accessToken, String refreshToken) {
         return MemberDto.of(
                 dto.memberNo(),
                 dto.id(),
@@ -79,7 +82,8 @@ public record MemberDto(Long memberNo,
                 dto.createdBy(),
                 dto.modifiedAt(),
                 dto.modifiedBy(),
-                token
+                accessToken,
+                refreshToken
         );
     }
 
@@ -114,12 +118,13 @@ public record MemberDto(Long memberNo,
                 null,
                 null,
                 null,
+                null,
                 null
         );
     }
 
     /** Login Binding **/
-    public static MemberDto login(Member entity, String jwtToken) {
+    public static MemberDto login(Member entity, String accessToken, String refreshToken) {
         return MemberDto.of(
                 entity.getMemberNo(),
                 entity.getId(),
@@ -131,7 +136,8 @@ public record MemberDto(Long memberNo,
                 entity.getCreatedBy(),
                 entity.getModifiedAt(),
                 entity.getModifiedBy(),
-                jwtToken
+                accessToken,
+                refreshToken
         );
     }
 
@@ -145,6 +151,7 @@ public record MemberDto(Long memberNo,
                 id,
                 null,
                 password,
+                null,
                 null,
                 null,
                 null,
@@ -169,6 +176,7 @@ public record MemberDto(Long memberNo,
                 null,
                 Gender.ordinalToName(gender),
                 Age.ordinalToValue(age),
+                null,
                 null,
                 null,
                 null,
