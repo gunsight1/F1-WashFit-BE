@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>세차장 관리</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h2>세차장 관리</h2>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Type</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="washZone : ${washZones}">
+            <td th:text="${washZone.name}"></td>
+            <td th:text="${washZone.address}"></td>
+            <td th:text="${washZone.type}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <!-- Pagination -->
+    <nav th:if="${washZones.totalPages > 1}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${washZones.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/washzones(page=${washZones.number - 1})}">Previous</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, washZones.totalPages - 1)}"
+                th:classappend="${washZones.number == i} ? 'active'">
+                <a class="page-link" th:href="@{/admin/washzones(page=${i})}" th:text="${i + 1}"></a>
+            </li>
+            <li class="page-item" th:classappend="${washZones.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/washzones(page=${washZones.number + 1})}">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>
