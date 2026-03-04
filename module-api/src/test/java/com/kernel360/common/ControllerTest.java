@@ -5,8 +5,8 @@ import com.kernel360.auth.controller.AuthController;
 import com.kernel360.auth.service.AuthService;
 import com.kernel360.commoncode.controller.CommonCodeController;
 import com.kernel360.commoncode.service.CommonCodeService;
-import com.kernel360.global.Interceptor.AcceptInterceptor;
-import com.kernel360.global.Interceptor.InterceptorConfig;
+import com.kernel360.global.jwt.JwtTokenProvider;
+import com.kernel360.global.security.CustomUserDetailsService;
 import com.kernel360.main.controller.MainController;
 import com.kernel360.main.service.MainService;
 import com.kernel360.member.controller.MemberController;
@@ -42,12 +42,6 @@ public abstract class ControllerTest {
     protected ObjectMapper objectMapper;
 
     @MockBean
-    protected InterceptorConfig interceptorConfig;
-
-    @MockBean
-    protected AcceptInterceptor acceptInterceptor;
-
-    @MockBean
     protected CommonCodeService commonCodeService;
 
     @MockBean
@@ -67,4 +61,10 @@ public abstract class ControllerTest {
 
     @MockBean
     protected ReviewService reviewService;
+
+    @MockBean
+    protected JwtTokenProvider jwtTokenProvider;
+
+    @MockBean
+    protected CustomUserDetailsService customUserDetailsService;
 }

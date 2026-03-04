@@ -87,6 +87,10 @@ public record MemberDto(Long memberNo,
         );
     }
 
+    public static MemberDto of(String testID, String mail, String password, String male, String age20, Object o, Object o1, Object o2, Object o3, Object o4, Object o5) {
+        return null;
+    }
+
     public Member toEntity() {
         return Member.of(
                 this.memberNo(),

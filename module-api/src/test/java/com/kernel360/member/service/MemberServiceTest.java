@@ -1,26 +1,27 @@
 package com.kernel360.member.service;
 
-import com.kernel360.auth.entity.Auth;
-import com.kernel360.auth.repository.AuthRepository;
 import com.kernel360.auth.service.AuthService;
+import com.kernel360.global.jwt.JwtTokenProvider;
+import com.kernel360.global.security.CustomUserDetails;
 import com.kernel360.member.dto.MemberDto;
 import com.kernel360.member.entity.Member;
 import com.kernel360.member.enumset.AccountType;
 import com.kernel360.member.repository.MemberRepository;
-import com.kernel360.utils.ConvertSHA256;
-import com.kernel360.utils.JWT;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,192 +31,77 @@ class MemberServiceTest {
     private MemberRepository memberRepository;
 
     @Mock
-    private JWT jwt;
+    private JwtTokenProvider jwtTokenProvider;
 
     @Mock
-    private AuthRepository authRepository;
+    private AuthService authService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
 
     @InjectMocks
     private MemberService memberService;
 
-    @InjectMocks
-    private AuthService authService;
-
-    @Mock
-    private ConvertSHA256 convertSHA256;
-
-    @BeforeEach
-    public void init() {
-
-        convertSHA256 = mock(ConvertSHA256.class);
-    }
-
     @Test
-    @DisplayName("회원가입_테스트")
-    void 회원가입_로직_테스트() {
-
-        /** given **/
-        MemberDto requestDto = MemberDto.of("testID", "gunsight777@naver.com", "testPassword", "MALE", "AGE_40");
-        Member member = memberService.getNewJoinMemberEntity(requestDto);
-
-        /** when **/
-        memberRepository.save(member);
-
-        /** then **/
-        verify(memberRepository).save(member);
-    }
-
-    @Test
-    @DisplayName("암호화_메서드_테스트")
-    void 암호화_로직_테스트() {
-
-        /** given **/
-        String original = "this_is_test_text!";
-        String expect = "c4ea44dbb286170b5caa17b03ae978a874cdb6c6751ed11a2518acb5dc84e86e";
-
-        /** when **/
-        String convert = convertSHA256.convertToSHA256(original);
-
-        /** then **/
-        assertEquals(expect, convert);
-    }
-
-    @Test
-    @DisplayName("로그인시_회원정보조회_후_토큰발급이_제대로_수행되는지_테스트한다.")
-    void 로그인_테스트() {
-
-        /** given **/
-        MemberDto loginDto = MemberDto.of("test03", "1234qwer");
-        Member mockLoginEntity = Member.loginMember(loginDto.id(), loginDto.password());
-        Member mockEntity = Member.of(502L, loginDto.id(), "test03@naver.com",
-                "0eb9de69892882d54516e03e30098354a2e39cea36adab275b6300c737c942fd", 0, 0, AccountType.PLATFORM.name());
-        String mockToken = "dummy_token";
-
-        /** stub **/
-        when(memberRepository.findOneByIdAndPassword(any(), any())).thenReturn(mockEntity);
-
-        /** when **/
-        Member loginEntity = mockLoginEntity;
-        Member memberEntity = memberRepository.findOneByIdAndPassword(loginEntity.getId(), loginEntity.getPassword());
-        String token = mockToken;
-        MemberDto memberInfo = MemberDto.login(memberEntity, token);
-
-        /** then , given-stub의 대한 리팩터링이 필요한 것으로 판단 됨. **/
-        assertNotNull(memberInfo, "로그인을 하면 회원정보를 가지고 있어야 함.");
-        assertEquals("dummy_token", token);
-        assertEquals(502, memberEntity.getMemberNo());
-        assertNull(memberInfo.password(), "비밀번호는 빈값이어야함.");
-    }
-
-    @Test
-    @DisplayName("로그인시_토큰발급_및_토큰정보_저장을_테스트한다.")
-    void 토큰_발급_저장_테스트() {
-
-        /** given **/
-        Member memberEntity = Member.of(502L, "test03", null, null, 0, 0, AccountType.PLATFORM.name());
-        String mockToken = "mockToken";
-        Auth auth = Auth.jwt(null, 502L, mockToken);
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        /** stub **/
-        when(jwt.generateToken(anyString())).thenReturn(mockToken);
-        when(authRepository.findOneByMemberNo(anyLong())).thenReturn(auth);
-
-        /** when **/
-        String token = jwt.generateToken(memberEntity.getId()); //mockToken return 정상 수행 확인
-        String encryptToken = convertSHA256.convertToSHA256(token); //해싱부분은 정적메소드여서 그런지 stub이 안됨...(?)
-        Auth authJwt = authRepository.findOneByMemberNo(memberEntity.getMemberNo());
-        String clientIP = AuthService.getClientIP(request);
-        authJwt = Optional.ofNullable(authJwt)
-                          .map(modifyAuth -> authService.modifyAuthJwt(modifyAuth, encryptToken, clientIP))
-                          .orElseGet(
-                                  () -> authService.createAuthJwt(memberEntity.getMemberNo(), encryptToken, clientIP));
-
-        authRepository.save(authJwt);
-
-        /** then , given - stub의 대한 리팩터링이 필요하다 판단 됨. **/
-        verify(authRepository).save(authJwt);
-        assertNotNull(token, "토큰 생성 결과 값은 null이 아니어야 함.");
-        assertEquals("D8A90363565890A7BD5E3FF42CFFDE851C8B532C60756EBBB837560DB3A011A7".toLowerCase(), encryptToken);
-    }
-
-    @Test
-    @DisplayName("회원가입시_아이디_중복_있으면_TRUE")
-    void 회원가입_아이디_중복_검사_있으면_TRUE() {
-
-        /** given **/
-        String id = "test01";
-        Member memberEntity = Member.of(51L, "test01", null, null, 0, 0, AccountType.PLATFORM.name());
-
-        /** stub **/
-        when(memberRepository.findOneById(anyString())).thenReturn(memberEntity);
-
-        /** when **/
-        Member member = memberRepository.findOneById(id);
-        boolean result = member != null ? true : false;
-
-        /** then **/
-        verify(memberRepository).findOneById(id);
-        assertTrue(result, "중복있으면TRUE이다.");
-    }
-
-    @Test
-    @DisplayName("회원가입시_아이디_중복_없으면_FALSE")
-    void 회원가입_아이디_중복_검사_없으면_FALSE() {
-
-        /** given **/
-        String id = "test01";
-
-        /** stub **/
+    @DisplayName("회원가입 로직 테스트")
+    void testJoinMember() {
+        // given
+        MemberDto requestDto = MemberDto.of("testID", "test@email.com", "password", "MALE", "AGE_20", null, null, null, null, null, null);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(memberRepository.findOneById(anyString())).thenReturn(null);
 
-        /** when **/
-        Member member = memberRepository.findOneById(id);
-        boolean result = member != null ? true : false;
+        // when
+        memberService.joinMember(requestDto);
 
-        /** then **/
-        verify(memberRepository).findOneById(id);
-        assertFalse(result, "중복없으면FALSE이다.");
+        // then
+        verify(memberRepository, times(1)).save(any(Member.class));
     }
 
     @Test
-    @DisplayName("회원가입시_이메일_중복_검사_있으면_TRUE")
-    void 회원가입_이메일_중복_있으면_TRUE() {
+    @DisplayName("로그인 테스트")
+    void testLogin() {
+        // given
+        MemberDto loginDto = MemberDto.of("testUser", "password");
+        Member mockMember = Member.of(1L, "testUser", "test@email.com", "encodedPassword", 0, 0, AccountType.PLATFORM.name());
+        CustomUserDetails userDetails = new CustomUserDetails(mockMember);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-        /** given **/
-        String email = "kernel360@kernel360.co.kr";
-        Member memberEntity = Member.of(51L, "test01", "kernel360@kernel360.co.kr", null, 0, 0, AccountType.PLATFORM.name());
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(jwtTokenProvider.createAccessToken(any())).thenReturn("access-token");
+        when(jwtTokenProvider.createRefreshToken(any())).thenReturn("refresh-token");
 
-        /** stub **/
-        when(memberRepository.findOneByEmail(anyString())).thenReturn(memberEntity);
+        // when
+        MemberDto result = memberService.login(loginDto, new MockHttpServletRequest());
 
-        /** when **/
-        Member member = memberRepository.findOneByEmail(email);
-
-        boolean result = member != null ? true : false;
-
-        /** then **/
-        verify(memberRepository).findOneByEmail(email);
-        assertTrue(result, "중복있으면TRUE이다.");
+        // then
+        assertNotNull(result);
+        assertEquals("access-token", result.jwtToken());
+        assertEquals("refresh-token", result.refreshToken());
+        verify(authService, times(1)).saveRefreshToken(any(Member.class), eq("refresh-token"), any());
     }
 
     @Test
-    @DisplayName("회원가입시_이메일_중복_검사_없으면_FALSE")
-    void 회원가입_이메일_중복_없으면_FALSE() {
+    @DisplayName("비밀번호 변경 테스트")
+    void testChangePassword() {
+        // given
+        String token = "some-token";
+        String memberId = "testUser";
+        String oldPassword = "oldPassword";
+        String newPassword = "newPassword";
+        Member mockMember = Member.of(1L, memberId, "test@email.com", passwordEncoder.encode(oldPassword), 0, 0, AccountType.PLATFORM.name());
 
-        /** given **/
-        String email = "kernel360@kernel360.co.kr";
+        when(jwtTokenProvider.getSubject(token)).thenReturn(memberId);
+        when(memberRepository.findOneByIdForAccountTypeByPlatform(memberId)).thenReturn(mockMember);
+        when(passwordEncoder.matches(newPassword, mockMember.getPassword())).thenReturn(false);
+        when(passwordEncoder.encode(newPassword)).thenReturn("encodedNewPassword");
 
-        /** stub **/
-        when(memberRepository.findOneByEmail(anyString())).thenReturn(null);
+        // when
+        memberService.changePassword(newPassword, token);
 
-        /** when **/
-        Member member = memberRepository.findOneByEmail(email);
-
-        boolean result = member != null ? true : false;
-
-        /** then **/
-        verify(memberRepository).findOneByEmail(email);
-        assertFalse(result, "중복없으면FALSE이다.");
+        // then
+        verify(mockMember, times(1)).updatePassword("encodedNewPassword");
     }
-
 }

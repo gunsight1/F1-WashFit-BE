@@ -109,12 +109,4 @@ public class MemberController {
         return ApiResponse.toResponseEntity(MemberBusinessCode.SUCCESS_REQUEST_RESET_PASSWORD);
     }
 
-    @GetMapping("/login/forKakao")
-    public ResponseEntity<ApiResponse<MemberDto>> loginForKakao(@RequestHeader("Authorization") String accessToken, HttpServletRequest request) {
-
-        MemberDto member = memberService.loginForKakao(accessToken, request);
-
-        return ApiResponse.toResponseEntity(SUCCESS_REQUEST_LOGIN_MEMBER, member);
-    }
-
 }

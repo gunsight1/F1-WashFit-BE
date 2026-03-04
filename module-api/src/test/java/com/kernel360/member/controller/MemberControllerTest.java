@@ -2,11 +2,15 @@ package com.kernel360.member.controller;
 
 import static com.kernel360.common.utils.RestDocumentUtils.getDocumentRequest;
 import static com.kernel360.common.utils.RestDocumentUtils.getDocumentResponse;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kernel360.common.ControllerTest;
@@ -16,7 +20,6 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -47,7 +50,7 @@ class MemberControllerTest extends ControllerTest {
     void 로그인() throws Exception {
         // given
         MemberDto memberDto = MemberDto.of("testID", "testPassword");
-        MemberDto memberInfo = new MemberDto(1L,
+        MemberDto memberInfo = MemberDto.of(1L,
                 "test01",
                 "kernel360@kernel360.com",
                 "",
@@ -57,21 +60,20 @@ class MemberControllerTest extends ControllerTest {
                 "test01",
                 null,
                 null,
-                "dummyToken"
+                "accessToken",
+                "refreshToken"
         );
-        MockHttpServletRequest request = new MockHttpServletRequest();
 
         // when
-        ObjectMapper objectMapper = new ObjectMapper();
-        String param = objectMapper.writeValueAsString(memberDto);
-
-        given(memberService.login(memberDto, request)).willReturn(memberInfo);
+        given(memberService.login(any(), any())).willReturn(memberInfo);
 
         /** then **/
         mockMvc.perform(MockMvcRequestBuilders.post("/member/login")
                                               .contentType(MediaType.APPLICATION_JSON)
-                                              .content(param))
+                                              .content(objectMapper.writeValueAsString(memberDto)))
                .andExpect(MockMvcResultMatchers.status().isOk())
+               .andExpect(jsonPath("$.value.jwtToken").value("accessToken"))
+               .andExpect(jsonPath("$.value.refreshToken").value("refreshToken"))
                .andReturn();
 
     }
@@ -204,4 +206,3 @@ class MemberControllerTest extends ControllerTest {
                ));
     }
 }
-

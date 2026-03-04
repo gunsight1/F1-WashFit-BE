@@ -19,7 +19,9 @@ public enum MemberErrorCode implements ErrorCode {
     FAILED_FIND_MEMBER_CAR_INFO(HttpStatus.BAD_REQUEST.value(), "EMC010", "요청 회원의 차량정보가 존재하지 않습니다."),
     FAILED_FIND_MEMBER_WASH_INFO(HttpStatus.BAD_REQUEST.value(), "EMC011", "요청 회원의 세차정보가 존재하지 않습니다."),
     WRONG_PASSWORD_REQUEST(HttpStatus.BAD_REQUEST.value(), "EMC012", "잘못된 비밀번호 입니다."),
-    FAILED_DUPLICATED_JOIN_MEMBER_INFO(HttpStatus.BAD_REQUEST.value(), "EMC013", "동일한 아이디로 가입한 회원이 이미 존재합니다.");
+    FAILED_DUPLICATED_JOIN_MEMBER_INFO(HttpStatus.BAD_REQUEST.value(), "EMC013", "동일한 아이디로 가입한 회원이 이미 존재합니다."),
+    INVALID_TOKEN_REQUEST(HttpStatus.BAD_REQUEST.value(), "EMC014", "유효하지 않은 토큰 요청입니다."),
+    LOGOUT_MEMBER(HttpStatus.BAD_REQUEST.value(), "EMC015", "로그아웃 된 사용자입니다.");
 
     private final int status;
     private final String code;

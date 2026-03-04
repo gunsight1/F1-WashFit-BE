@@ -6,6 +6,7 @@ import com.kernel360.carinfo.repository.CarInfoRepository;
 import com.kernel360.commoncode.service.CommonCodeService;
 import com.kernel360.exception.BusinessException;
 import com.kernel360.global.jwt.JwtTokenProvider;
+import com.kernel360.global.security.CustomUserDetails;
 import com.kernel360.member.code.MemberErrorCode;
 import com.kernel360.member.dto.*;
 import com.kernel360.member.entity.Member;
@@ -15,7 +16,6 @@ import com.kernel360.member.enumset.Age;
 import com.kernel360.member.enumset.Gender;
 import com.kernel360.member.repository.MemberRepository;
 import com.kernel360.member.repository.WithdrawMemberRepository;
-import com.kernel360.utils.ConvertSHA256;
 import com.kernel360.washinfo.entity.WashInfo;
 import com.kernel360.washinfo.repository.WashInfoRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,8 +24,11 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -42,8 +45,9 @@ public class MemberService {
     private final CommonCodeService commonCodeService;
     private final CarInfoRepository carInfoRepository;
     private final WashInfoRepository washInfoRepository;
-    private final KakaoRequest kakaoRequest;
     private final WithdrawMemberRepository withdrawMemberRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     @Transactional
     public void joinMember(MemberDto requestDto) {
@@ -55,7 +59,7 @@ public class MemberService {
     }
 
     protected Member getNewJoinMemberEntity(MemberDto requestDto) {
-        String encodePassword = ConvertSHA256.convertToSHA256(requestDto.password());
+        String encodePassword = passwordEncoder.encode(requestDto.password());
         int genderOrdinal;
         int ageOrdinal;
 
@@ -71,16 +75,15 @@ public class MemberService {
 
     @Transactional
     public MemberDto login(MemberDto loginDto, HttpServletRequest request) {
-        Member loginEntity = newRequestLoginEntity(loginDto);
-        if (Objects.isNull(loginEntity)) {
-            throw new BusinessException(MemberErrorCode.FAILED_GENERATE_LOGIN_REQUEST_INFO);
-        }
+        // AuthenticationManager를 사용하여 인증 수행
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(loginDto.id(), loginDto.password());
 
-        Member memberEntity = memberRepository.findOneByIdAndPassword(loginEntity.getId(), loginEntity.getPassword());
-        if (Objects.isNull(memberEntity)) { throw new BusinessException(MemberErrorCode.FAILED_REQUEST_LOGIN);  }
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // JWT 생성
-        Authentication authentication = new UsernamePasswordAuthenticationToken(memberEntity.getId(), "", new ArrayList<>());
+        Member memberEntity = ((CustomUserDetails) authentication.getPrincipal()).getMember();
+
         String accessToken = jwtTokenProvider.createAccessToken(authentication);
         String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
 
@@ -88,12 +91,6 @@ public class MemberService {
         authService.saveRefreshToken(memberEntity, refreshToken, request);
 
         return MemberDto.login(memberEntity, accessToken, refreshToken);
-    }
-
-    private Member newRequestLoginEntity(MemberDto loginDto) {
-        String encodePassword = ConvertSHA256.convertToSHA256(loginDto.password());
-
-        return Member.loginMember(loginDto.id(), encodePassword);
     }
 
     @Transactional(readOnly = true)
@@ -142,11 +139,11 @@ public class MemberService {
         String id = jwtTokenProvider.getSubject(token);
         Member member = memberRepository.findOneByIdForAccountTypeByPlatform(id);
 
-        if (member.getPassword().equals(ConvertSHA256.convertToSHA256(password))) {
+        if (passwordEncoder.matches(password, member.getPassword())) {
             throw new BusinessException(MemberErrorCode.WRONG_PASSWORD_REQUEST);
         }
 
-        member.updatePassword(ConvertSHA256.convertToSHA256(password));
+        member.updatePassword(passwordEncoder.encode(password));
         log.info("{} 회원의 비밀번호가 변경되었습니다.", id);
     }
 
@@ -260,30 +257,7 @@ public class MemberService {
             throw new BusinessException(MemberErrorCode.FAILED_FIND_MEMBER_INFO);
         }
 
-        member.updatePassword(ConvertSHA256.convertToSHA256(newPassword));
-    }
-
-    @Transactional
-    public MemberDto loginForKakao(String accessToken, HttpServletRequest request) {
-
-        KakaoUserDto kakaoUser = kakaoRequest.getKakaoUserByToken(accessToken);
-        if (Objects.isNull(memberRepository.findOneById(kakaoUser.id()))) {
-            memberRepository.save(
-                    Member.createJoinMember(kakaoUser.id(), kakaoUser.email(), "kakao", Gender.OTHERS.ordinal(),
-                            Age.AGE_99.ordinal(), AccountType.KAKAO.name()));
-        }
-
-        MemberDto memberDto = MemberDto.from(memberRepository.findOneById(kakaoUser.id()));
-
-        // JWT 생성
-        Authentication authentication = new UsernamePasswordAuthenticationToken(memberDto.id(), "", new ArrayList<>());
-        String newAccessToken = jwtTokenProvider.createAccessToken(authentication);
-        String refreshToken = jwtTokenProvider.createRefreshToken(authentication);
-
-        // Refresh Token 저장
-        authService.saveRefreshToken(memberDto.toEntity(), refreshToken, request);
-
-        return MemberDto.fromKakao(memberDto, newAccessToken, refreshToken);
+        member.updatePassword(passwordEncoder.encode(newPassword));
     }
 
     @Transactional(readOnly = true)
@@ -291,7 +265,7 @@ public class MemberService {
         String id = jwtTokenProvider.getSubject(token);
         Member member = memberRepository.findOneById(id);
 
-        return member.getPassword().equals(ConvertSHA256.convertToSHA256(password));
+        return passwordEncoder.matches(password, member.getPassword());
     }
 
     public MemberDto findByMemberId(String id) {
