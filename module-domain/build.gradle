@@ -50,9 +50,9 @@ tasks.jar {
 
 tasks.register("prepareKotlinBuildScriptModel") {}
 
-def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile;
+def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
 }
 

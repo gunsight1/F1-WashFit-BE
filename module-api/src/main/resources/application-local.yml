@@ -19,8 +19,8 @@ spring:
     baseline-on-migrate: true
     validate-on-migrate: false
     #JPA보다 flyway 우선 실행
-    autoconfigure:
-      exclude: org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+#    autoconfigure:
+#      exclude: org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
 
   mail:
     host: smtp.gmail.com

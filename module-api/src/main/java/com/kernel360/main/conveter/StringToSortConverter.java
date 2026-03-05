@@ -4,13 +4,14 @@ import com.kernel360.exception.BusinessException;
 import com.kernel360.main.code.ConverterErrorCode;
 import com.kernel360.product.enumset.Sort;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StringToSortConverter implements Converter<String, Sort> {
 
     @Override
-    public Sort convert(String source) {
+    public Sort convert(@NonNull String source) {
         for (Sort sort : Sort.values()) {
             if (sort.getOrderType().equalsIgnoreCase(source)) {
                 return sort;
