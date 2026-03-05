@@ -7,7 +7,6 @@ import com.kernel360.member.repository.MemberRepository;
 import com.kernel360.product.dto.ProductResponse;
 import com.kernel360.product.dto.QProductResponse;
 import com.kernel360.product.entity.QProduct;
-import com.kernel360.utils.JWT;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
@@ -19,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -36,7 +34,7 @@ public class LikeRepositoryImpl implements LikeRepositoryDsl{
     @Override
     public Page<ProductResponse> findAllByCondition(LikeSearchDto condition, Pageable pageable) {
 
-        String memberId = JWT.ownerId(condition.token());
+        String memberId = condition.memberId();
         Member member = memberRepository.findOneById(memberId);
 
         List<ProductResponse> products =

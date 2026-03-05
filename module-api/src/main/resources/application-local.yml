@@ -79,6 +79,9 @@ constants:
     access-token-expiration-minutes: 30
     refresh-token-expiration-days: 7
 
+app:
+  cors:
+    allowed-origins: "http://localhost:3000"
 
 aws:
   credentials:

@@ -10,6 +10,7 @@ import com.kernel360.product.dto.ProductResponse;
 import com.kernel360.product.dto.ProductSearchDto;
 import com.kernel360.product.entity.Product;
 import com.kernel360.product.enumset.SafetyStatus;
+import com.kernel360.product.enumset.Sort;
 import com.kernel360.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -146,5 +147,18 @@ public class ProductService {
     public Page<ProductResponse> searchWithCondition(ProductSearchDto productSearchDto, Pageable pageable) {
 
         return productRepository.findAllByCondition(productSearchDto, pageable);
+    }
+
+    public Page<ProductResponse> getProductBySortType(Sort sortType, String keyword, Pageable pageable) {
+        if (sortType == Sort.VIEW_COUNT_PRODUCT_ORDER) {
+            return getProductWithKeywordAndOrderByViewCount(keyword, pageable);
+        } else if (sortType == Sort.VIOLATION_PRODUCT_LIST) {
+            return getProductWithKeywordAndViolationProducts(keyword, pageable);
+        } else if (sortType == Sort.RECOMMENDATION_PRODUCT_ORDER) {
+            return getProductWithKeywordAndOrderByRecommend(keyword, pageable);
+        } else if (sortType == Sort.RECENT_PRODUCT_ORDER) {
+            return getProductWithKeywordAndRecentOrder(keyword, pageable);
+        }
+        return getProductWithKeywordAndOrderByViewCount(keyword, pageable); // Default
     }
 }

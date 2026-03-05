@@ -1,12 +1,13 @@
 package com.kernel360.likes.controller;
 
 
+import com.kernel360.global.jwt.JwtTokenProvider;
 import com.kernel360.likes.code.LikeBusinessCode;
 import com.kernel360.likes.dto.LikeSearchDto;
 import com.kernel360.likes.entity.Like;
 import com.kernel360.likes.service.LikeService;
-import com.kernel360.main.enumset.Sort;
 import com.kernel360.product.dto.ProductResponse;
+import com.kernel360.product.enumset.Sort;
 import com.kernel360.product.service.ProductService;
 import com.kernel360.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +25,16 @@ public class LikeController {
 
     private final LikeService likeService;
     private final ProductService productService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Page<ProductResponse>>> getAllLikes(
             @RequestHeader(value = "Authorization", required = true ) String token,
             @RequestParam(name = "sortType", defaultValue = "viewCnt-order") Sort sortType,
             @RequestParam(value = "keyword", required = false) String keyword, Pageable pageable){
-        Page<ProductResponse> likes = likeService.findAllLikes(token, LikeSearchDto.of(token, keyword, sortType), pageable);
+        
+        String memberId = jwtTokenProvider.getSubject(token);
+        Page<ProductResponse> likes = likeService.findAllLikes(token, LikeSearchDto.of(memberId, keyword, sortType), pageable);
 
         return ApiResponse.toResponseEntity(LikeBusinessCode.LIKE_LIST_SEARCH_SUCCESS, likes);
     }
