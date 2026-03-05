@@ -3,8 +3,6 @@ package com.kernel360.global.config;
 import com.kernel360.global.jwt.JwtAccessDeniedHandler;
 import com.kernel360.global.jwt.JwtAuthenticationEntryPoint;
 import com.kernel360.global.jwt.JwtAuthenticationFilter;
-import com.kernel360.global.security.CustomOAuth2UserService;
-import com.kernel360.global.security.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,8 +24,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+//    private final CustomOAuth2UserService customOAuth2UserService;
+//    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {

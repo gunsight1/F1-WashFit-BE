@@ -2,8 +2,10 @@ package com.kernel360.member.enumset;
 
 import com.kernel360.exception.BusinessException;
 import com.kernel360.member.code.MemberErrorCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public enum Gender {
     MALE(0),

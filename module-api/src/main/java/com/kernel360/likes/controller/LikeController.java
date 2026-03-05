@@ -8,7 +8,6 @@ import com.kernel360.likes.entity.Like;
 import com.kernel360.likes.service.LikeService;
 import com.kernel360.product.dto.ProductResponse;
 import com.kernel360.product.enumset.Sort;
-import com.kernel360.product.service.ProductService;
 import com.kernel360.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 public class LikeController {
 
     private final LikeService likeService;
-    private final ProductService productService;
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/search")

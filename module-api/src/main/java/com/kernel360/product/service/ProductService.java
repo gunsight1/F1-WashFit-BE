@@ -149,6 +149,7 @@ public class ProductService {
         return productRepository.findAllByCondition(productSearchDto, pageable);
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductResponse> getProductBySortType(Sort sortType, String keyword, Pageable pageable) {
         if (sortType == Sort.VIEW_COUNT_PRODUCT_ORDER) {
             return getProductWithKeywordAndOrderByViewCount(keyword, pageable);

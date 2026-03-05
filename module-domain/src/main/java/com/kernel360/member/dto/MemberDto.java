@@ -70,22 +70,22 @@ public record MemberDto(Long memberNo,
         );
     }
 
-    public static MemberDto fromKakao(MemberDto dto, String accessToken, String refreshToken) {
-        return MemberDto.of(
-                dto.memberNo(),
-                dto.id(),
-                dto.email(),
-                dto.password(),
-                dto.gender(),
-                dto.age(),
-                dto.createdAt(),
-                dto.createdBy(),
-                dto.modifiedAt(),
-                dto.modifiedBy(),
-                accessToken,
-                refreshToken
-        );
-    }
+//    public static MemberDto fromKakao(MemberDto dto, String accessToken, String refreshToken) {
+//        return MemberDto.of(
+//                dto.memberNo(),
+//                dto.id(),
+//                dto.email(),
+//                dto.password(),
+//                dto.gender(),
+//                dto.age(),
+//                dto.createdAt(),
+//                dto.createdBy(),
+//                dto.modifiedAt(),
+//                dto.modifiedBy(),
+//                accessToken,
+//                refreshToken
+//        );
+//    }
 
     public Member toEntity() {
         return Member.of(
